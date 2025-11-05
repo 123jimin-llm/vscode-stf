@@ -1,32 +1,153 @@
 {
 	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
 	"name": "Simple Text Format",
+	"scopeName": "source.stf",
+	"fileTypes": ["stf"],
 	"patterns": [
-		{
-			"include": "#keywords"
-		},
-		{
-			"include": "#strings"
-		}
+		{ "include": "#escapedDataLine" },
+		{ "include": "#blockComment" },
+		{ "include": "#lineComment" },
+		{ "include": "#rawBlock" },
+		{ "include": "#commandLine" },
+		{ "include": "#dataLine" }
 	],
 	"repository": {
-		"keywords": {
-			"patterns": [{
-				"name": "keyword.control.stf",
-				"match": "\\b(if|while|for|return)\\b"
-			}]
+		"escapedDataLine": {
+			"name": "meta.line.data.escaped.stf",
+			"match": "^(;;)(.*)$",
+			"captures": {
+				"1": { "name": "punctuation.definition.escape.stf" },
+				"2": { "name": "string.unquoted.data.stf" }
+			}
 		},
-		"strings": {
-			"name": "string.quoted.double.stf",
-			"begin": "\"",
-			"end": "\"",
+		"blockComment": {
+			"name": "meta.comment.block.stf",
+			"begin": "^;[ \\t]*/\\*",
+			"beginCaptures": {
+				"0": { "name": "punctuation.definition.comment.begin.stf" }
+			},
+			"end": "^;[ \\t]*\\*/",
+			"endCaptures": {
+				"0": { "name": "punctuation.definition.comment.end.stf" }
+			},
+			"contentName": "comment.block.stf",
+			"patterns": [
+				{ "include": "#blockComment" }
+			]
+		},
+		"lineComment": {
+			"name": "comment.line.stf",
+			"match": "^;[ \\t]*(?:#|//).*$",
+			"captures": {
+				"0": { "name": "punctuation.definition.comment.stf" }
+			}
+		},
+		"rawBlock": {
+			"name": "meta.command.raw.block.stf",
+			"begin": "^;[ \\t]*(raw)\\b",
+			"beginCaptures": {
+				"1": { "name": "keyword.control.command.raw.stf" }
+			},
+			"end": "^;[ \\t]*end\\b",
+			"endCaptures": {
+				"0": { "name": "keyword.control.command.end.stf" }
+			},
+			"contentName": "source.json5",
+			"patterns": [{ "include": "source.json5" }]
+		},
+		"commandLine": {
+			"name": "meta.command.line.stf",
+			"begin": "^;(?:[ \\t]*)([a-z][a-z0-9]*)\\b",
+			"beginCaptures": {
+				"0": { "name": "punctuation.definition.command.stf" },
+				"1": {
+					"name": "support.function.command.name.stf",
+					"patterns": [
+						{
+							"match": "(?i)\\b(message|msg|system|sys|developer|dev|user|assistant|ai|tool|raw|flush)\\b",
+							"name": "keyword.control.command.builtin.stf"
+						},
+						{
+							"match": "(?i)\\bend\\b",
+							"name": "keyword.control.command.end.stf"
+						}
+					]
+				}
+			},
+			"end": "$",
+			"patterns": [
+				{ "include": "#json5Inline" },
+				{ "include": "#kvKey" },
+				{ "include": "#equals" },
+				{ "include": "#kvValue" },
+				{ "include": "#whitespace" }
+			]
+		},
+		"json5Inline": {
+			"name": "meta.arguments.json5.inline.stf",
+			"begin": "(?<=\\b[a-z][a-z0-9]*)(?:[ \\t]*)\\{",
+			"beginCaptures": { "0": { "name": "punctuation.section.arguments.begin.stf" } },
+			"end": "\\}$",
+			"endCaptures": { "0": { "name": "punctuation.section.arguments.end.stf" } },
+			"contentName": "source.json5",
+			"patterns": [{ "include": "source.json5" }]
+		},
+		"kvKey": {
+			"name": "variable.parameter.key.stf",
+			"match": "\\b([a-z][a-z0-9]*)\\b(?=\\s*=)"
+		},
+		"equals": {
+			"name": "keyword.operator.assignment.equals.stf",
+			"match": "="
+		},
+		"kvValue": {
+			"name": "meta.arguments.value.stf",
 			"patterns": [
 				{
-					"name": "constant.character.escape.stf",
-					"match": "\\\\."
+					"name": "meta.embedded.json5.quoted.double.stf",
+					"begin": "(?<=\\=)[ \\t]*\"",
+					"beginCaptures": { "0": { "name": "punctuation.definition.string.begin.stf" } },
+					"end": "\"",
+					"endCaptures": { "0": { "name": "punctuation.definition.string.end.stf" } },
+					"contentName": "source.json5",
+					"patterns": [{ "include": "source.json5" }]
+				},
+				{
+					"name": "meta.embedded.json5.quoted.single.stf",
+					"begin": "(?<=\\=)[ \\t]*'",
+					"beginCaptures": { "0": { "name": "punctuation.definition.string.begin.stf" } },
+					"end": "'",
+					"endCaptures": { "0": { "name": "punctuation.definition.string.end.stf" } },
+					"contentName": "source.json5",
+					"patterns": [{ "include": "source.json5" }]
+				},
+				{
+					"name": "constant.language.boolean.stf",
+					"match": "(?<=\\=)[ \\t]*(?:true|false)\\b"
+				},
+				{
+					"name": "constant.language.null.stf",
+					"match": "(?<=\\=)[ \\t]*null\\b"
+				},
+				{
+					"name": "constant.numeric.number.stf",
+					"match": "(?<=\\=)[ \\t]*(?:[-+]?\\d*\\.\\d+(?:[eE][-+]?\\d+)?|[-+]?\\d+(?:[eE][-+]?\\d+)?|0x[0-9A-Fa-f]+)\\b"
+				},
+				{
+					"name": "string.unquoted.value.stf",
+					"match": "(?<=\\=)[ \\t]*([^\\s\"']+)"
 				}
 			]
+		},
+		"dataLine": {
+			"name": "string.unquoted.data.stf",
+			"match": "^(?!(?:;|;;)).+"
+		},
+		"whitespace": {
+			"match": "[ \\t]+",
+			"name": "meta.whitespace.stf"
 		}
 	},
-	"scopeName": "source.stf"
+	"foldingStartMarker": "^;[ \\t]*(?:raw\\b|/\\*)",
+	"foldingStopMarker": "^;[ \\t]*(?:end\\b|\\*/)"
 }

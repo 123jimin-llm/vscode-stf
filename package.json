@@ -1,0 +1,25 @@
+{
+  "name": "vscode-stf",
+  "displayName": "vscode-stf",
+  "description": "VSCode syntax highlight for Simple Text Format.",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.105.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [{
+      "id": "stf",
+      "aliases": ["Simple Text Format", "stf"],
+      "extensions": [".stf"],
+      "configuration": "./language-configuration.json"
+    }],
+    "grammars": [{
+      "language": "stf",
+      "scopeName": "source.stf",
+      "path": "./syntaxes/stf.tmLanguage.json"
+    }]
+  }
+}
